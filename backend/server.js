@@ -16,6 +16,12 @@ app.use("/auth", authRoutes);
 const lotsRoutes = require("./routes/lots");
 app.use("/api/lots", lotsRoutes);
 
+// ====== THÊM DÒNG NÀY ======
+const bookingRoutes = require("./routes/bookingRoutes");
+app.use("/api", bookingRoutes); // route thật sẽ là /api/bookings, khớp api-contract.md
+// ============================
+
+
 /**
  * GET /health — kiểm tra cả 3 thứ: server sống, Postgres sống, Redis sống.
  * Đây là route ĐẦU TIÊN phải chạy được trước khi code bất kỳ thứ gì khác.
@@ -48,6 +54,13 @@ const server = http.createServer(app);
 // PHẢI init trước server.listen(), không thì slotService.getIO() throw lỗi
 // ngay request đổi trạng thái slot đầu tiên.
 initSocket(server);
+
+// ====== THÊM DÒNG NÀY, SAU initSocket ======
+// Phải require SAU initSocket(server) vì file jobs/expireBookings.js
+// gọi getIO() bên trong — gọi trước khi socket init xong là undefined, bụp app.
+require("./jobs/expireBookings");
+// ============================================
+
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
